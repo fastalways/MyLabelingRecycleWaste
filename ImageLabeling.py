@@ -8,7 +8,7 @@ from os.path import isfile, join, exists
 import tkinter as tk
 import copy
 import re
-
+from time import gmtime, strftime
 '''==============  Automatically Folders Listing  ================'''
 AutomaticallyFoldersListing = True # True = Auto   / False = Manually
 
@@ -32,7 +32,7 @@ dataset_path = 'D:/RecycleWasteDataset/test/Paper/'
 img_index = 534 #default = 0
 img_index_changed = True
 
-#dataset_crop_path = 'D:/DatasetMedicalWasteTestLabeled/'
+dataset_crop_path = 'D:/RecycleWasteDataset_Output/'
 
 if(AutomaticallyFoldersListing):
     folder_name_list = []
@@ -295,7 +295,7 @@ while(True):
         key = cv.waitKeyEx(200)
     # print(key)
     # key control
-    if(key==ord('q')): # 'q' -> exit
+    if(key==ord('q') or key==ord('Q')): # 'q' -> exit
         break;
     elif(key==2424832 or key==2490368 or key==ord('a')): # ←/↑ or a goto previous image 
         print("--")
@@ -321,8 +321,9 @@ while(True):
             img_index=len(list_files)-1
     elif(key==13 or key==32): # Enter or Spacebar -> save cropped
         if cropRectOK :
-            #cropped_image = original_image[cropRect.y:cropRect.y+cropRect.h ,cropRect.x:cropRect.x+cropRect.w]
-            #cv.imwrite(img_crop_path+imgName+'.png',cropped_image)
+            now_str = strftime("%Y-%m-%d %H-%M-%S", gmtime())
+            cropped_image = original_image[cropRect.y:cropRect.y+cropRect.h ,cropRect.x:cropRect.x+cropRect.w]
+            cv.imwrite(img_crop_path+imgName+now_str+'.png',cropped_image)
             saveLabelsToFile()
             img_index_changed = True
             cropRectOK = False
