@@ -8,7 +8,9 @@ from os.path import isfile, join, exists
 import tkinter as tk
 import copy
 import re
-from time import gmtime, strftime
+from datetime import datetime
+import subprocess
+
 '''==============  Automatically Folders Listing  ================'''
 AutomaticallyFoldersListing = True # True = Auto   / False = Manually
 
@@ -23,16 +25,16 @@ label_name_list = [
 
 '''  Manually Folders Listing  '''
 folder_name_list = [
-    ''#'training_images'
+    ''#'training_images'1
 ]
 
 
 folder_name = folder_name_list[0]
-dataset_path = 'D:/RecycleWasteDataset/test/Paper/'
-img_index = 534 #default = 0
+dataset_path = 'D:/RecycleWasteDataset/train/can/'     # <-------------------------------------
+img_index = 0 #default = 0                            # <-------------------------------------
 img_index_changed = True
 
-dataset_crop_path = 'D:/RecycleWasteDataset_Output/'
+img_crop_path = 'C:/RecycleWasteDataset_Output/'
 
 if(AutomaticallyFoldersListing):
     folder_name_list = []
@@ -175,6 +177,20 @@ imgName = ''
 imgExtension = ''
 savedMessage = ''
 
+# Read Number (img_index) from file
+if os.path.exists(img_path+'.count'):
+    file_count = open(img_path+'.count', 'r')
+    line = file_count.readline()
+    if not line:
+        img_index=0
+    else:
+        if (line.isnumeric()):
+            img_index=int(line)
+            #print(f"Read img_index success : {img_index} !!")
+        else:
+            img_index=0
+    file_count.close()
+
 
 currentLabel = label_name_list[0]
 SimpleSelectLabel(label_name_list)
@@ -296,6 +312,12 @@ while(True):
     # print(key)
     # key control
     if(key==ord('q') or key==ord('Q')): # 'q' -> exit
+        if os.path.exists(img_path+'.count'):
+            subprocess.check_call(["attrib","-H",img_path+'/.count'])
+        with open(img_path+'/.count', 'w') as f:
+            f.write(str(img_index))
+            #print(f"Written img_index : {img_index}")
+            subprocess.check_call(["attrib","+H",img_path+'/.count'])
         break;
     elif(key==2424832 or key==2490368 or key==ord('a')): # ←/↑ or a goto previous image 
         print("--")
@@ -321,10 +343,11 @@ while(True):
             img_index=len(list_files)-1
     elif(key==13 or key==32): # Enter or Spacebar -> save cropped
         if cropRectOK :
-            now_str = strftime("%Y-%m-%d %H-%M-%S", gmtime())
-            cropped_image = original_image[cropRect.y:cropRect.y+cropRect.h ,cropRect.x:cropRect.x+cropRect.w]
-            cv.imwrite(img_crop_path+imgName+now_str+'.png',cropped_image)
             saveLabelsToFile()
+            now_str = datetime.now().strftime('-%Y-%m-%d_%H-%M-%S')
+            cropped_image = original_image[cropRect.y:cropRect.y+cropRect.h ,cropRect.x:cropRect.x+cropRect.w]
+            cv.imwrite(img_crop_path+imgName+now_str+'.png',cv.resize(cropped_image,(int(cropped_image.shape[1]/4),int(cropped_image.shape[0]/4))))
+            #cv.imshow("cropped_image",cropped_image)
             img_index_changed = True
             cropRectOK = False
             mouseFinished = False
